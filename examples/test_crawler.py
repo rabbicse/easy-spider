@@ -5,6 +5,8 @@ import utils.log as log
 
 
 class TestCrawler(Spider):
+    __start_url = 'http://www.allitebooks.in/page/{}/'
+
     def __init__(self):
         Spider.__init__(self)
 
@@ -20,16 +22,22 @@ class TestCrawler(Spider):
 
     def process_data(self):
         try:
-            with Pool(5) as pool:
-                pool.map(self.do_process, range(1000))
+            with Pool(1) as pool:
+                pool.map(self.do_process, range(1, 2))
         except Exception as x:
             print(x)
 
     def do_process(self, n):
         try:
-            logger.info(n)
+            response = self.fetch_data(self.__start_url.format(n))
+            if not response:
+                return
+
+            data, redirected_url = response
+
+
         except Exception as x:
-            logger.error()
+            logger.error(x)
 
 
 if __name__ == '__main__':

@@ -5,12 +5,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 # create formatter and add it to the handlers
-FORMATTER = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-
-def init_logger(name):
-    logger.name = name
-    logger.setLevel(logging.DEBUG)
+FORMATTER = logging.Formatter(
+    '%(asctime)s - [%(module)s %(name)s %(processName)s %(threadName)s %(lineno)d] - %(levelname)s - %(message)s')
 
 
 def setup_formatter(format):

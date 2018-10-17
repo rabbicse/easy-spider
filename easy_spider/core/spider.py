@@ -7,7 +7,7 @@ import urllib
 from urllib import request
 from urllib.error import HTTPError, URLError
 
-from utils import tail_recursive
+from easy_spider.utils import tail_recursive
 
 logger = logging.getLogger(__name__)
 

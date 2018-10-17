@@ -1,0 +1,1 @@
+from easy_spider.core.spider import Spider

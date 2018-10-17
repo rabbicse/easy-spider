@@ -6,8 +6,8 @@ from collections import OrderedDict
 from multiprocessing import Semaphore, Value
 from multiprocessing.pool import Pool
 from bs4 import BeautifulSoup
-from core.spider import Spider
-import utils.log as log
+from easy_spider import Spider
+from easy_spider import log
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +95,8 @@ class TestCrawler(Spider):
                     if year_m:
                         item['year'] = year_m.group(1)
 
-                self.__write_item(item)
+                if item['year'] in ['2018', '2017', '2016']:
+                    self.__write_item(item)
         except Exception as x:
             logger.error(x)
 

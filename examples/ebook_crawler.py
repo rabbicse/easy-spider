@@ -7,25 +7,21 @@ from multiprocessing import Semaphore, Value
 from multiprocessing.pool import Pool
 from bs4 import BeautifulSoup
 from easy_spider import Spider
-from easy_spider import log
 
 logger = logging.getLogger(__name__)
 
 
-class TestCrawler(Spider):
+class EbookCrawler(Spider):
     __start_url = 'http://www.allitebooks.in/page/{}/'
     __url_cache = []
     __total = Value('i', 0)
     __lock = Semaphore()
 
     def __init__(self, output_csv):
-        Spider.__init__(self)
+        Spider.__init__(self, log_file='ebook.log')
         self.__output_csv = output_csv + '.csv' if not str(output_csv).endswith('.csv') else output_csv
 
     def __enter__(self):
-        log.setup_stream_logger()
-        log.setup_rotating_file_logger('ebook.log')
-
         hdr = [('name', 'Name'),
                ('year', 'Year'),
                ('url', 'Map URL')]
@@ -130,5 +126,5 @@ class TestCrawler(Spider):
 
 
 if __name__ == '__main__':
-    with TestCrawler('ebook_data.csv') as crawler:
+    with EbookCrawler('ebook_data.csv') as crawler:
         crawler.process_data()

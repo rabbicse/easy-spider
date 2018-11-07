@@ -1,5 +1,5 @@
-from examples.ebook_crawler import TestCrawler
+from examples.ebook_crawler import EbookCrawler
 
 if __name__ == '__main__':
-    with TestCrawler('ebook_updated.csv') as crawler:
+    with EbookCrawler('ebook_updated.csv') as crawler:
         crawler.process_data()

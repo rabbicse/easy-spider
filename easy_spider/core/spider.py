@@ -4,15 +4,16 @@ import logging
 import random
 import socket
 import urllib
-from urllib import request
+from urllib import request, parse
 from urllib.error import HTTPError, URLError
 
-from easy_spider.utils import tail_recursive
+from easy_spider.utils import tail_recursive, log
 
 logger = logging.getLogger(__name__)
 
 
 class Spider:
+    TIMEOUT = 60
     USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'
     HEADERS = {
         'User-Agent': USER_AGENT,
@@ -67,14 +68,22 @@ class Spider:
     HTTP_RETRY_CODES = [403, 404, 408, 413, 500, 502, 503, 504]
     MAX_RETRY = 5
 
-    def __init__(self, proxies=None, headers=None):
-        socket.setdefaulttimeout(60)
-        self.__proxies = proxies
+    def __init__(self, log_file='spider.log', proxies=None, headers=None):
+        log.setup_stream_logger()
+        log.setup_rotating_file_logger(log_file)
+        socket.setdefaulttimeout(self.TIMEOUT)
+        self.proxies = proxies
         if headers:
             self.HEADERS = headers
 
-    @tail_recursive
-    def fetch_data(self, url, retry=0):
+    # @tail_recursive
+    def fetch_data(self, url, post_data=None, retry=0):
+        """
+        :param url:
+        :param data: format: {'key': 'value'}
+        :param retry:
+        :return:
+        """
         try:
             logger.info('Fetching data from: {}'.format(url))
             # Create opener object
@@ -82,7 +91,11 @@ class Spider:
 
             # open url
             # we'll get response
-            response = opener.open(url)
+            if post_data:
+                post_req = urllib.parse.urlencode(post_data).encode('utf-8')
+                response = opener.open(url, data=post_req, timeout=self.TIMEOUT)
+            else:
+                response = opener.open(url, timeout=self.TIMEOUT)
 
             # we'll get response header from info()
             response_header = response.info()
@@ -120,22 +133,22 @@ class Spider:
                              .format(e.code, self.HTTP_RESPONSES[e.code][0], self.HTTP_RESPONSES[e.code][1]))
 
             if retry < self.MAX_RETRY and e.code in self.HTTP_RETRY_CODES:
-                return self.fetch_data(url, retry + 1)
+                return self.fetch_data(url, retry=retry + 1)
         except URLError as e:
             logger.error('URLError: Failed to reach a server. Reason: {}'.format(e.reason))
             if retry < self.MAX_RETRY:
-                return self.fetch_data(url, retry + 1)
+                return self.fetch_data(url, retry=retry + 1)
         except Exception as x:
             logger.error('Unexpected error when get data. Error details: {}'.format(x))
             if retry < self.MAX_RETRY:
-                return self.fetch_data(url, retry + 1)
+                return self.fetch_data(url, retry=retry + 1)
 
     def __get_random_proxy(self):
         try:
-            if not self.__proxies or len(self.__proxies) == 0:
+            if not self.proxies or len(self.proxies) == 0:
                 return
 
-            proxy = random.choice(self.__proxies)
+            proxy = random.choice(self.proxies)
             logger.info('Proxy: {}'.format(proxy))
 
             if proxy['https'] == 'yes':
